@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AliExpress AI Toolkit | 爆款标题 SEO 专家</title>
+    <link rel="stylesheet" href="./index.css">
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- 侧边栏：配置与词库 -->
+        <aside class="sidebar">
+            <div class="glass-card">
+                <div class="card-title">⚙️ AI 指挥官配置</div>
+                <div class="form-group">
+                    <label>智控模型</label>
+                    <input type="text" id="api-model" value="gpt-5.4">
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.6;">
+                    云端部署版通过同域代理请求 AI 接口，避免浏览器拦截 HTTP / CORS，并隐藏服务端密钥。
+                </p>
+            </div>
+
+            <div class="glass-card">
+                <div class="card-title">📖 P10 流量密码</div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;">
+                    属性词 + 核心词 + 场景词 = 128 字符高权重标题。一个词仅限出现一次。
+                </p>
+            </div>
+
+            <div class="glass-card">
+                <div class="card-title">📊 词库实时监控</div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; text-align: center; margin-bottom: 1rem;">
+                    <div><div id="stat-total" style="font-size: 1.25rem; font-weight: 700;">0</div><div style="font-size: 0.7rem; color: var(--text-muted);">总数</div></div>
+                    <div><div id="stat-used" style="font-size: 1.25rem; font-weight: 700; color: var(--warning);">0</div><div style="font-size: 0.7rem; color: var(--text-muted);">已用</div></div>
+                    <div><div id="stat-rem" style="font-size: 1.25rem; font-weight: 700; color: var(--success);">0</div><div style="font-size: 0.7rem; color: var(--text-muted);">剩余</div></div>
+                </div>
+                <button class="btn btn-primary" onclick="document.getElementById('csv-upload').click()">
+                    <span>📁 导入关键词表 (CSV)</span>
+                </button>
+                <input type="file" id="csv-upload" accept=".csv" style="display: none">
+                
+                <button class="btn" onclick="resetKeywords()" style="margin-top: 0.75rem; background: rgba(255,255,255,0.05);">🧹 清除使用记录</button>
+                <div style="text-align: center; color: var(--primary); font-size: 0.8rem; cursor: pointer; text-decoration: underline; margin-top: 1rem;" id="toggle-browser-btn">🔍 全量词库透视</div>
+            </div>
+            
+            <div style="text-align: center; font-size: 0.75rem; color: var(--text-muted);">v3.5 Professional Cloud Edition</div>
+        </aside>
+
+        <!-- 主操作区 -->
+        <main class="main-content">
+            <div class="glass-card">
+                <div class="card-title">✍️ 赋能产品描述</div>
+                <textarea id="prompt-input" style="height: 120px;" placeholder="粘贴产品中文标题或卖点...AI 将从您的千万词库中精准匹配高权重长词进行碰撞。"></textarea>
+                <button class="btn btn-primary" id="generate-btn" style="margin-top: 1.25rem; height: 50px; font-size: 1rem;">
+                    🚀 开启词林碰撞 (生成 128 字符标题)
+                </button>
+            </div>
+
+            <!-- AI 匹配面板 -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div class="glass-card">
+                    <div class="card-title" style="font-size: 0.9rem;">🎯 核心词 Cores</div>
+                    <div id="res-cores" class="tag-container"></div>
+                </div>
+                <div class="glass-card">
+                    <div class="card-title" style="font-size: 0.9rem;">📍 场景词 Scenes</div>
+                    <div id="res-scenes" class="tag-container"></div>
+                </div>
+                <div class="glass-card">
+                    <div class="card-title" style="font-size: 0.9rem;">🛠️ 属性词 Attrs</div>
+                    <div id="res-attrs" class="tag-container"></div>
+                </div>
+            </div>
+
+            <!-- 成果输出区 -->
+            <div class="glass-card" style="flex: 1; min-height: 400px; display: flex; flex-direction: column;">
+                <div class="card-title" style="justify-content: space-between;">
+                    <span>📦 爆款标题输出</span>
+                    <span id="count-status" style="font-size: 0.8rem; opacity: 0.6;">0 titles ready</span>
+                </div>
+                <div id="title-list" style="flex: 1; overflow-y: auto;">
+                    <!-- Titles will be injected here -->
+                </div>
+            </div>
+
+            <!-- 词库全景浏览器 (默认隐藏) -->
+            <div class="glass-card" id="browser-container" style="display: none; height: 500px; display: flex; flex-direction: column;">
+                <div class="card-title">🔍 词库全景浏览器 (按热度排序)</div>
+                <input type="text" id="browser-search" placeholder="搜索关键词..." style="margin-bottom: 1rem;">
+                <div class="table-wrapper" style="flex: 1; overflow-y: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th id="sort-index">#</th>
+                                <th id="sort-word">关键词</th>
+                                <th id="sort-traffic">月搜索量 (流量) ⇅</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="browser-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 加载层 -->
+    <div id="loader" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(5px); z-index:1000; flex-direction:column; align-items:center; justify-content:center;">
+        <div style="width: 50px; height: 50px; border: 4px solid var(--primary); border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+        <p style="margin-top: 1.5rem; letter-spacing: 2px;">正在进行词林多维碰撞...</p>
+    </div>
+
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+
+    <script type="module" src="./main.js"></script>
+</body>
+</html>

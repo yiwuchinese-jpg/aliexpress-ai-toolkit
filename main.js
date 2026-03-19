@@ -27,7 +27,7 @@ function setupEventListeners() {
 // 切换浏览器
 function toggleBrowser() {
     const container = document.getElementById('browser-container');
-    const isVisible = container.style.display === 'flex';
+    const isVisible = window.getComputedStyle(container).display === 'flex';
     container.style.display = isVisible ? 'none' : 'flex';
     if (!isVisible) renderBrowser();
 }
@@ -181,7 +181,9 @@ async function generateTitles() {
 }
 
 async function callAI(prompt) {
-    const model = document.getElementById('api-model').value;
+    const model = document.getElementById('api-model').value.trim();
+    const apiKey = document.getElementById('api-key').value.trim();
+    const apiBase = document.getElementById('api-base').value.trim();
 
     const available = KEYWORDS_POOL.filter(i => !USED_KEYWORDS.has(i.word.toLowerCase())).sort((a,b) => b.traffic - a.traffic);
     const pool = available.slice(0, 500).map(i => i.word).join(', ');
@@ -191,6 +193,8 @@ async function callAI(prompt) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             model,
+            apiKey,
+            apiBase,
             prompt,
             pool
         })

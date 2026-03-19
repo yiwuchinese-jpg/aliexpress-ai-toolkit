@@ -4,20 +4,19 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const apiBase = process.env.OPENAI_BASE_URL;
-  const apiKey = process.env.OPENAI_API_KEY;
+  const { prompt, pool, model, apiKey: userKey, apiBase: userBase } = req.body || {};
+
+  const apiBase = userBase || process.env.OPENAI_BASE_URL;
+  const apiKey = userKey || process.env.OPENAI_API_KEY;
   const defaultModel = process.env.OPENAI_MODEL || 'gpt-5.4';
 
   if (!apiBase || !apiKey) {
     return res.status(500).json({
       error: 'Server configuration missing',
-      message: 'Please set OPENAI_BASE_URL and OPENAI_API_KEY in Vercel environment variables.'
+      message: 'Please set OPENAI_BASE_URL and OPENAI_API_KEY in Vercel environment variables, or provide them in the UI.'
     });
   }
-
   try {
-    const { prompt, pool, model } = req.body || {};
-
     if (!prompt || !pool) {
       return res.status(400).json({ error: 'Missing prompt or pool' });
     }

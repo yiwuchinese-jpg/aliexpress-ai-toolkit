@@ -14,10 +14,18 @@
                 <div class="card-title">⚙️ AI 指挥官配置</div>
                 <div class="form-group">
                     <label>智控模型</label>
-                    <input type="text" id="api-model" value="gpt-5.4">
+                    <input type="text" id="api-model" value="gpt-5.4" placeholder="例如: gpt-3.5-turbo">
+                </div>
+                <div class="form-group">
+                    <label>API Key (令牌)</label>
+                    <input type="password" id="api-key" placeholder="在此粘贴您的 Token">
+                </div>
+                <div class="form-group">
+                    <label>API Base (接口地址)</label>
+                    <input type="text" id="api-base" placeholder="默认: https://api.openai.com/v1">
                 </div>
                 <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.6;">
-                    云端部署版通过同域代理请求 AI 接口，避免浏览器拦截 HTTP / CORS，并隐藏服务端密钥。
+                    云端部署版优先使用您输入的 API 信息。留空则使用服务端默认配置。
                 </p>
             </div>
 
@@ -85,7 +93,7 @@
             </div>
 
             <!-- 词库全景浏览器 (默认隐藏) -->
-            <div class="glass-card" id="browser-container" style="display: none; height: 500px; display: flex; flex-direction: column;">
+            <div class="glass-card" id="browser-container" style="display: none; height: 500px; flex-direction: column;">
                 <div class="card-title">🔍 词库全景浏览器 (按热度排序)</div>
                 <input type="text" id="browser-search" placeholder="搜索关键词..." style="margin-bottom: 1rem;">
                 <div class="table-wrapper" style="flex: 1; overflow-y: auto;">

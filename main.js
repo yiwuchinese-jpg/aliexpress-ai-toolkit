@@ -8,15 +8,37 @@ let sortDesc = true;
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
+    loadAIConfig();
     updateStats();
     setupEventListeners();
 });
+
+function loadAIConfig() {
+    const config = JSON.parse(localStorage.getItem('AI_CONFIG')) || {};
+    if (config.model) document.getElementById('api-model').value = config.model;
+    if (config.key) document.getElementById('api-key').value = config.key;
+    if (config.base) document.getElementById('api-base').value = config.base;
+}
+
+function saveAIConfig() {
+    const config = {
+        model: document.getElementById('api-model').value.trim(),
+        key: document.getElementById('api-key').value.trim(),
+        base: document.getElementById('api-base').value.trim()
+    };
+    localStorage.setItem('AI_CONFIG', JSON.stringify(config));
+}
 
 function setupEventListeners() {
     document.getElementById('csv-upload').addEventListener('change', handleCSVUpload);
     document.getElementById('generate-btn').addEventListener('click', generateTitles);
     document.getElementById('toggle-browser-btn').addEventListener('click', toggleBrowser);
     document.getElementById('browser-search').addEventListener('input', renderBrowser);
+    
+    // API 配置自动保存
+    ['api-model', 'api-key', 'api-base'].forEach(id => {
+        document.getElementById(id).addEventListener('input', saveAIConfig);
+    });
     
     // 排序监听
     document.getElementById('sort-index').onclick = () => sortBrowser('index');

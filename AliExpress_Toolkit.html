@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AliExpress AI Toolkit - 爆款标题生成器</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .api-badge {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent);
+            padding: 0.4rem 1rem;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        input, textarea {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: var(--text);
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .keyword-tag {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            margin: 0.2rem;
+            font-size: 0.8rem;
+            color: #e2e8f0;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .matrix-item {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .matrix-label {
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .title-output-container {
+            margin-top: 1.5rem;
+            flex: 1;
+        }
+
+        .output-scroll {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .output-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .output-scroll::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+
+        .title-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            padding: 1.25rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .title-card:hover {
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .title-text {
+            font-size: 1.05rem;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+            padding-right: 40px;
+        }
+
+        .title-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .char-count {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .char-count.warning { color: var(--warning); }
+        .char-count.danger { color: var(--danger); font-weight: bold; }
+
+        .btn-icon {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .btn-icon:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        #loader {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(99, 102, 241, 0.1);
+            border-left-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* 新增：关键词统计与上传样式 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .file-input-group {
+            position: relative;
+            margin-top: 1rem;
+        }
+
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent);
+            border: 1px dashed var(--accent);
+            padding: 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .file-input-label:hover {
+            background: rgba(99, 102, 241, 0.2);
+        }
+
+        #csv-upload {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            overflow: hidden;
+        }
+
+        .btn-reset {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            margin-top: 1rem;
+        }
+
+        .btn-reset:hover {
+            background: rgba(245, 158, 11, 0.2);
+        }
+
+        /* 新增：词库浏览器样式 */
+        .keyword-browser {
+            margin-top: 1.5rem;
+            display: none; /* 默认隐藏 */
+        }
+
+        .browser-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            gap: 1rem;
+        }
+
+        .search-box {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-box input {
+            padding-left: 2.5rem;
+        }
+
+        .search-box::before {
+            content: '🔍';
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th {
+            background: var(--bg);
+            position: sticky;
+            top: 0;
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--accent);
+            cursor: pointer;
+        }
+
+        th:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr.used-row {
+            opacity: 0.5;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .status-pill {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
+
+        .status-unused { background: rgba(34, 197, 94, 0.1); color: var(--success); }
+        .status-used { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">🚀 AliExpress AI Toolkit</div>
+        <div class="api-badge">Pro Version 3.2</div>
+    </nav>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="card">
+                <div class="card-title">⚙️ AI 配置</div>
+                <div class="form-group">
+                    <label>API Base</label>
+                    <input type="text" id="api-base" value="http://198.46.193.175:8317/v1">
+                </div>
+                <div class="form-group">
+                    <label>API Key</label>
+                    <input type="password" id="api-key" value="Cylldjw99!">
+                </div>
+                <div class="form-group">
+                    <label>Model</label>
+                    <input type="text" id="api-model" value="gpt-5.4">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📖 P10 流量密码</div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;">
+                    <b>逻辑</b>: 属性词 + 核心词 + 场景词<br>
+                    <b>目标</b>: 填满 128 字符，增加搜索权重<br>
+                    <b>规则</b>: <br>
+                    1. 严禁机翻/直译<br>
+                    2. 一个词只出现一次<br>
+                    3. 组合多个核心词和长尾词
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📊 词库管理</div>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-value" id="stat-total">0</span>
+                        <span class="stat-label">总数</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-value" id="stat-used" style="color: var(--warning)">0</span>
+                        <span class="stat-label">已用</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-value" id="stat-rem" style="color: var(--success)">0</span>
+                        <span class="stat-label">剩余</span>
+                    </div>
+                </div>
+
+                <div class="file-input-group">
+                    <label class="file-input-label" for="csv-upload">
+                        <span>📁 上传关键词 CSV</span>
+                        <input type="file" id="csv-upload" accept=".csv" onchange="handleCSVUpload(event)">
+                    </label>
+                </div>
+                
+                <button class="btn btn-reset" onclick="resetKeywords()" style="margin-bottom: 0.5rem">🧹 重置所有使用记录</button>
+                <div style="text-align: center; color: var(--accent); font-size: 0.8rem; cursor: pointer; text-decoration: underline" onclick="toggleBrowser()">🔍 查看全量词库详情 (含流量)</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="card">
+                <div class="card-title">✍️ 输入产品描述 (中文)</div>
+                <textarea id="prompt-input" style="height: 120px;" placeholder="粘贴产品中文标题或描述细节...AI将从上传的词库中深度碰撞生成爆款长标题"></textarea>
+                <button class="btn btn-primary" onclick="generateTitles()" style="margin-top: 1rem;">🔥 深度碰撞生成长标题 (128字符)</button>
+            </div>
+
+            <div class="editor-workspace">
+                <div class="matrix-grid">
+                    <div class="matrix-item"><div class="matrix-label">匹配核心词 (Cores)</div><div id="res-cores"></div></div>
+                    <div class="matrix-item"><div class="matrix-label">匹配场景词 (Scenes)</div><div id="res-scenes"></div></div>
+                    <div class="matrix-item"><div class="matrix-label">匹配属性词 (Attrs)</div><div id="res-attrs"></div></div>
+                </div>
+                <div class="title-output-container">
+                    <div class="card-title" style="display:flex; justify-content:space-between">📦 爆款标题库 <span style="font-size:0.8rem; font-weight:normal" id="count-status">0 titles</span></div>
+                    <div class="output-scroll" id="title-list"></div>
+                </div>
+            </div>
+
+            <!-- 新增：词库浏览器卡片 -->
+            <div class="card keyword-browser" id="browser-container">
+                <div class="card-title">🔍 词库全景浏览器 (已按流量排序)</div>
+                <div class="browser-header">
+                    <div class="search-box">
+                        <input type="text" id="browser-search" placeholder="搜索关键词..." oninput="renderBrowser()">
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="keyword-table">
+                        <thead>
+                            <tr>
+                                <th onclick="sortBrowser('index')">#</th>
+                                <th onclick="sortBrowser('word')">关键词</th>
+                                <th onclick="sortBrowser('traffic')">月搜索量 (流量) ⇅</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="browser-body">
+                            <!-- 数据将通过 JS 渲染 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="loader"><div class="spinner"></div><p style="margin-top:10px">正在进行词林碰撞...</p></div>
+
+    <script>
+        // 核心状态管理：从本地存储加载，并确保新旧版本兼容
+        let rawPool = JSON.parse(localStorage.getItem('KEYWORDS_POOL')) || [];
+        // 迁移逻辑：如果旧数据是字符串数组，自动转换为对象数组
+        let KEYWORDS_POOL = rawPool.map(item => typeof item === 'string' ? {word: item, traffic: 0} : item);
+        
+        let USED_KEYWORDS = new Set(JSON.parse(localStorage.getItem('USED_KEYWORDS')) || []);
+        let sortCol = 'traffic';
+        let sortDesc = true;
+
+        // 初始化显示
+        updateStats();
+
+        // 切换词库浏览器显示
+        function toggleBrowser() {
+            const container = document.getElementById('browser-container');
+            const isVisible = window.getComputedStyle(container).display === 'block';
+            container.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible) renderBrowser();
+        }
+
+        // CSV 上传处理
+        function handleCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+                const newPool = [];
+                const seen = new Set();
+                
+                // 辅助函数：尝试将单元格内容转为干净的流量数字
+                const parseTraffic = (val) => {
+                    if (!val) return 0;
+                    // 移除逗号、百分号和非数字字符（保留小数点）
+                    const clean = val.replace(/,/g, '').replace(/%/g, '').trim();
+                    const num = parseFloat(clean);
+                    return isNaN(num) ? 0 : Math.floor(num);
+                };
+
+                lines.forEach((line, index) => {
+                    if (index === 0) return; // 跳过表头
+                    
+                    const cells = [];
+                    let current = '';
+                    let inQuotes = false;
+                    for (let i = 0; i < line.length; i++) {
+                        const char = line[i];
+                        if (char === '"') inQuotes = !inQuotes;
+                        else if (char === ',' && !inQuotes) {
+                            cells.push(current.trim());
+                            current = '';
+                        } else {
+                            current += char;
+                        }
+                    }
+                    cells.push(current.trim());
+                    
+                    // 提取关键词 (0)
+                    const word = cells[0] || '';
+                    if (word.length <= 1) return;
+
+                    // 流量提取策略：扫描索引 3, 6, 12, 15，并排除百分比风格的小数(如果可能)
+                    // 在速卖通导出中，月搜索量通常是较大的整数
+                    let traffic = 0;
+                    [3, 6, 12, 15].forEach(idx => {
+                        const t = parseTraffic(cells[idx]);
+                        if (t > traffic) traffic = t; // 寻找该行中最大的数字作为流量参考
+                    });
+
+                    if (!seen.has(word.toLowerCase())) {
+                        newPool.push({ word, traffic });
+                        seen.add(word.toLowerCase());
+                    }
+
+                    // 备选词逻辑 (1)
+                    const altWord = cells[1] || '';
+                    if (altWord.length > 2 && !seen.has(altWord.toLowerCase()) && isNaN(altWord)) {
+                        newPool.push({ word: altWord, traffic: Math.floor(traffic * 0.7) });
+                        seen.add(altWord.toLowerCase());
+                    }
+                });
+
+                if (newPool.length === 0) {
+                    alert('未检测到有效关键词，请检查 CSV 格式是否正确');
+                    return;
+                }
+
+                KEYWORDS_POOL = newPool;
+                localStorage.setItem('KEYWORDS_POOL', JSON.stringify(KEYWORDS_POOL));
+                
+                USED_KEYWORDS.clear();
+                localStorage.setItem('USED_KEYWORDS', JSON.stringify([]));
+                
+                updateStats();
+                // 强制重置排序并刷新渲染
+                sortCol = 'traffic';
+                sortDesc = true;
+                if (document.getElementById('browser-container').style.display === 'block') renderBrowser();
+                
+                alert(`成功导入 ${KEYWORDS_POOL.length} 个关键词，已自动提取流量数据！`);
+            };
+            reader.readAsText(file);
+        }
+
+        function updateStats() {
+            const total = KEYWORDS_POOL.length;
+            const used = USED_KEYWORDS.size;
+            const remaining = total - used;
+
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-used').innerText = used;
+            document.getElementById('stat-rem').innerText = remaining;
+        }
+
+        function renderBrowser() {
+            const tbody = document.getElementById('browser-body');
+            const searchTerm = document.getElementById('browser-search').value.toLowerCase();
+            
+            // 过滤与排序
+            let displayData = KEYWORDS_POOL.filter(item => 
+                item.word.toLowerCase().includes(searchTerm)
+            );
+
+            displayData.sort((a, b) => {
+                let valA = a[sortCol];
+                let valB = b[sortCol];
+                if (sortCol === 'word') {
+                    return sortDesc ? valB.localeCompare(valA) : valA.localeCompare(valB);
+                }
+                return sortDesc ? valB - valA : valA - valB;
+            });
+
+            tbody.innerHTML = displayData.map((item, idx) => {
+                const isUsed = USED_KEYWORDS.has(item.word.toLowerCase());
+                return `
+                    <tr class="${isUsed ? 'used-row' : ''}">
+                        <td>${idx + 1}</td>
+                        <td style="font-weight:600">${item.word}</td>
+                        <td style="color: var(--accent)">${item.traffic.toLocaleString()}</td>
+                        <td><span class="status-pill ${isUsed ? 'status-used' : 'status-unused'}">${isUsed ? '已使用' : '未使用'}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function sortBrowser(col) {
+            if (sortCol === col) sortDesc = !sortDesc;
+            else { sortCol = col; sortDesc = true; }
+            renderBrowser();
+        }
+
+        function resetKeywords() {
+            if (confirm('确定要重置所有使用记录吗？')) {
+                USED_KEYWORDS.clear();
+                localStorage.setItem('USED_KEYWORDS', JSON.stringify([]));
+                updateStats();
+                renderBrowser();
+            }
+        }
+
+        function markAsUsed(text) {
+            const lowerText = text.toLowerCase();
+            let count = 0;
+            KEYWORDS_POOL.forEach(item => {
+                const w = item.word.toLowerCase();
+                if (lowerText.includes(w) && !USED_KEYWORDS.has(w)) {
+                    USED_KEYWORDS.add(w);
+                    count++;
+                }
+            });
+            if (count > 0) {
+                localStorage.setItem('USED_KEYWORDS', JSON.stringify(Array.from(USED_KEYWORDS)));
+                updateStats();
+                if (document.getElementById('browser-container').style.display === 'block') renderBrowser();
+            }
+        }
+
+        async function callAI(prompt) {
+            const apiBase = document.getElementById('api-base').value;
+            const apiKey = document.getElementById('api-key').value;
+            const model = document.getElementById('api-model').value;
+
+            // 优先选择流量高的未使用词
+            const available = KEYWORDS_POOL
+                .filter(item => !USED_KEYWORDS.has(item.word.toLowerCase()))
+                .sort((a, b) => b.traffic - a.traffic);
+            
+            const poolToUse = available.length > 0 ? available.map(i => i.word) : ["No available keywords"];
+
+            const systemPrompt = `你是一个速卖通爆款标题SEO专家。
+你的任务是根据用户的产品描述，从下方的【关键词库】中筛选出最相关的词，并遵循 P10 逻辑生成极其具吸引力、高曝光的长标题。
+
+P10 公式：[属性词集合] + [核心词集合] + [场景词/长尾词集合]
+
+【关键词库】：${poolToUse.slice(0, 800).join(', ')}
+
+核心指令：
+1. **填满空间**：标题长度必须接近 128 字符。
+2. **禁止重复**：同一个词在同一个标题中绝对不能出现第二次。
+3. **词源限制**：库中词汇已按流量高低排序，请优先结合高流量词。保证英语表达专业地道。
+
+返回值必须是 JSON 格式:
+{
+  "cores": ["core1"], "scenes": ["scene1"], "attrs": ["attr1"], "titles": ["Title 1", "Title 2"]
+}`;
+
+            const response = await fetch(`${apiBase}/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: model,
+                    messages: [{role: 'user', content: systemPrompt + "\n\n产品描述：" + prompt}],
+                    response_format: { type: "json_object" }
+                })
+            });
+
+            const data = await response.json();
+            let content = data.choices[0].message.content.trim();
+            if (content.startsWith('```')) {
+                content = content.replace(/^```json\s*|\s*```$/g, '').trim();
+            }
+            return JSON.parse(content);
+        }
+
+        async function generateTitles() {
+            if (KEYWORDS_POOL.length === 0) {
+                alert('请先上传关键词 CSV！');
+                return;
+            }
+            const input = document.getElementById('prompt-input').value.trim();
+            if (!input) { alert('请先输入描述'); return; }
+
+            document.getElementById('loader').style.display = 'flex';
+            try {
+                const res = await callAI(input);
+                renderTags('res-cores', res.cores || []);
+                renderTags('res-scenes', res.scenes || []);
+                renderTags('res-attrs', res.attrs || []);
+
+                const list = document.getElementById('title-list');
+                list.innerHTML = '';
+                (res.titles || []).forEach(t => {
+                    const card = document.createElement('div');
+                    card.className = 'title-card';
+                    const len = t.length;
+                    const statusClass = len > 128 ? 'danger' : (len < 100 ? 'warning' : '');
+                    card.innerHTML = `
+                        <div class="title-text">${t}</div>
+                        <div class="title-meta">
+                            <span class="char-count ${statusClass}">${len} / 128 字符</span>
+                            <button class="btn-icon" onclick="copyAndRecord(this, '${t.replace(/'/g, "\\'")}')" title="复制并记录">📋 复制</button>
+                        </div>
+                    `;
+                    list.appendChild(card);
+                });
+                document.getElementById('count-status').innerText = `${(res.titles || []).length} titles generated`;
+            } catch (e) {
+                console.error(e);
+                alert('生成失败: ' + e.message);
+            } finally {
+                document.getElementById('loader').style.display = 'none';
+            }
+        }
+
+        function renderTags(id, words) {
+            document.getElementById(id).innerHTML = words.map(w => `<span class="keyword-tag">${w}</span>`).join('');
+        }
+
+        function copyAndRecord(btn, txt) {
+            navigator.clipboard.writeText(txt).then(() => {
+                const original = btn.innerText;
+                btn.innerHTML = '✅ 已复制';
+                markAsUsed(txt);
+                setTimeout(() => btn.innerHTML = original, 1500);
+            });
+        }
+    </script>
+</body>
+</html>

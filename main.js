@@ -42,7 +42,7 @@ function handleCSVUpload(event) {
         const text = e.target.result;
         const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
         const newPool = [];
-        const seen = new Set();
+        const seen = new Set(KEYWORDS_POOL.map(i => i.word.toLowerCase()));
         
         const parseTraffic = (val) => {
             if (!val) return 0;
@@ -85,10 +85,8 @@ function handleCSVUpload(event) {
 
         if (newPool.length === 0) { alert('未检测到有效关键词'); return; }
 
-        KEYWORDS_POOL = newPool;
+        KEYWORDS_POOL = [...KEYWORDS_POOL, ...newPool];
         localStorage.setItem('KEYWORDS_POOL', JSON.stringify(KEYWORDS_POOL));
-        USED_KEYWORDS.clear();
-        localStorage.setItem('USED_KEYWORDS', JSON.stringify([]));
         
         updateStats();
         sortCol = 'traffic'; sortDesc = true;
